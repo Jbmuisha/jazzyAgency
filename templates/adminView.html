@@ -1,0 +1,547 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JazzyAgency Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='mycss.css') }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .entierBody {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sideBar {
+            width: 250px;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            border-top-right-radius: 40px;
+            border-bottom-right-radius: 40px;
+            position: relative;
+            z-index: 1000;
+            overflow: hidden;
+            transition: left 0.3s ease;
+            left: 0;
+            margin-bottom: 18px;
+
+            /* default on desktop */
+        }
+
+        .log {
+            height: 140px;
+            flex-shrink: 0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+
+        }
+
+        .log img {
+            height: 200px;
+            object-fit: contain;
+            display: block;
+            margin-top: 50px;
+        }
+
+        .navScrollable {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 20px 10px;
+            scrollbar-width: thin;
+        }
+
+        .navManulist ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 20px;
+        }
+
+        .signout {
+            flex-shrink: 0;
+            font-size: 16px;
+            color: #d44;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+
+
+        .navManulist li a {
+            font-size: 15px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            transition: background 0.3s ease, color 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .navManulist li a:hover,
+        .navManulist li a:focus {
+            background-color: #e0f0ff;
+            color: #0077cc;
+        }
+
+        .navManulist li.active a {
+            background-color: #0077cc;
+            color: white;
+            font-weight: bold;
+        }
+
+
+
+        .topbar {
+            flex-grow: 1;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .topbar-center {
+            position: relative;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .topbar-center h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .topbar-right {
+            display: flex;
+            margin-left: auto;
+            gap: 20px;
+        }
+
+        .topbar-right span {
+            font-size: 14px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .topbar-right i {
+            font-size: 24px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        /* Sidebar toggle buttons hidden by default */
+        .sidebar-toggle {
+            display: none;
+        }
+
+        /* Scrollbar styling */
+        .navScrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .navScrollable::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        @media screen and (max-width: 991px) {
+            .sideBar {
+                width: 200px;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .topbar-center h1 {
+                font-size: 22px;
+            }
+
+            .log {
+                height: 120px;
+                margin-bottom: 50px;
+            }
+
+            .navManulist li a {
+                font-size: 14px;
+            }
+
+            .topbar-right span {
+                font-size: 12px;
+            }
+
+            /* Show toggle buttons */
+            .sidebar-toggle {
+                display: block;
+                position: fixed;
+                font-size: 24px;
+                z-index: 1200;
+                /* above sidebar and topbar */
+                color: #333;
+                background-color: #fff;
+                padding: 8px 10px;
+                border-radius: 8px;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+                top: 20px;
+                left: 20px;
+            }
+
+            .sidebar-toggle.close-toggle {
+                left: 220px;
+                display: none;
+            }
+
+
+
+        }
+
+
+
+        @media screen and (max-width: 768px) {
+            .entierBody {
+                flex-direction: column;
+            }
+
+            .sideBar {
+                position: fixed;
+                left: -250px;
+
+                top: 80px;
+
+                height: calc(100vh - 80px);
+                border-radius: 0;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                z-index: 1050;
+                /* under topbar but above content */
+            }
+
+            .sideBar.open {
+                left: 0;
+            }
+
+            .topbar {
+                position: fixed;
+                height: 80px;
+                padding: 0 15px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .topbar-center {
+                display: none;
+            }
+
+            .topbar-right {
+                margin-left: auto;
+                gap: 15px;
+            }
+
+            .main-area {
+                padding-top: 80px !important;
+                overflow-y: auto;
+                height: calc(100vh - 80px);
+                transition: margin-left 0.3s ease, width 0.3s ease;
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .sideBar.open~.main-area {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+
+            .navManulist li a {
+                font-size: 10px;
+                font-weight: 500;
+            }
+        }
+
+        .topbar-right img {
+            width: 32px;
+            /* 8 * 4 = 32px height as per your w-8 h-8 */
+            height: 32px;
+            border-radius: 50%;
+            /* circular image */
+            border: 1px solid #ccc;
+            object-fit: cover;
+            /* maintain aspect ratio, cover the container */
+            transition: opacity 0.3s ease;
+
+        }
+
+        .topbar-right img:hover {
+            opacity: 0.8;
+            /* subtle hover effect */
+        }
+
+        .content-wrapper {
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 80px;
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .status-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-tab.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 0 6px;
+        }
+
+        .bg-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .bg-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .bg-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .bg-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+            margin-top: 80px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        /* Update existing styles */
+        .main-area {
+            padding: 0 !important;
+            height: 100vh !important;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 15px;
+            }
+
+            .status-tab {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Animation for status changes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="entierBody">
+        <!-- Sidebar -->
+        <div class="sideBar">
+            <div class="log" style="display: flex; align-items: center; justify-content: center; padding: 25px 15px;">
+                <img src="{{ url_for('static', filename='image/logo copie 2.png') }}" alt="Logo"
+                    style="height: 245px; width: auto;" />
+            </div>
+
+            <div class="navScrollable">
+                <div class="navManulist">
+                    <ul>
+                        <li class="active"><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                        <li><a href="/investiseur"><i class="fas fa-piggy-bank"></i> Investments</a></li>
+                        <li><a href="/appointment_view"><i class="fas fa-calendar-check"></i> Appointments</a></li>
+                        <li><a href="/transactions"><i class="fas fa-list"></i> Transactions</a></li>
+                        <li><a href="/benefit"><i class="fas fa-chart-line"></i> Benefits reports</a></li>
+                        <li><a href="/tithe"><i class="fa-solid fa-hand-holding-dollar"></i> Tithe reports</a></li>
+                        <li><a href="/withdrawals" class="{% if request.path == '/withdrawals' %}active{% endif %}">
+                                <i class="fa-solid fa-money-bill-wave"></i> Withdrawals
+                                {% if status_counts and status_counts.pending > 0 %}
+                                <span class="badge bg-warning text-dark ms-2">{{ status_counts.pending }}</span>
+                                {% endif %}
+                            </a></li>
+
+
+                        <li><a href="/paypalAlltransactionView"><i class="fa-solid fa-money-bill-wave"></i> PayPal</a>
+                        </li>
+                        <li><a href="/userManager"><i class="fa-solid fa-user-cog"></i> Manage Users</a></li>
+                        <li><a href="/client-history"><i class="fa-solid fa-history"></i> Client History</a></li>
+                        <li><a href="/wallet"><i class="fas fa-wallet"></i> Wallet</a></li>
+                        <li><a href="/add-funds"><i class="fa-solid fa-circle-plus"></i> Add Funds</a></li>
+                        <li><a href="/dept"><i class="fa-solid fa-file-invoice-dollar"></i> Debts</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="signout">
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sign-out</a>
+            </div>
+        </div>
+
+        <!-- Page content area -->
+        <div class="main-area" style="flex-grow: 1; overflow-y: auto; padding: 20px;">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div class="topbar-center">
+                    <h1>JAZZYAGENCY</h1>
+                </div>
+
+                <div class="topbar-right" style="display: flex; align-items: center; gap: 20px;">
+                    <span style="cursor: pointer;">Fr🇫🇷</span>
+                    <span style="cursor: pointer;">En🇬🇧</span>
+                    <div style="position: relative; cursor: pointer;">
+                        <i class="fa-solid fa-bell" style="font-size: 1.2rem;"></i>
+                        <span class="notification-badge"
+                            style="position: absolute; top: -5px; right: -5px; background-color: #ff4757; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">3</span>
+                    </div>
+                    <div class="user-profile-mini"
+                        style="display: flex; align-items: center; gap: 10px; padding: 5px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 20px; cursor: pointer;">
+                        <div
+                            style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
+                            <img id="topbar-profile-avatar"
+                                src="{% if current_user.image %}{{ url_for('static', filename='uploads/' + current_user.image) }}{% else %}{{ url_for('static', filename='uploads/default-avatar.png') }}{% endif %}"
+                                alt="{{ current_user.username }}" style="width: 100%; height: 100%; object-fit: cover;"
+                                onerror="handleTopbarImageError(this)">
+                        </div>
+                        <span style="color: #fff; font-size: 0.85rem; font-weight: 500;">{{ current_user.username
+                            }}</span>
+                    </div>
+                </div>
+                <script>
+                    function handleTopbarImageError(img) {
+                        img.onerror = null;
+                        img.src = '{{ url_for("static", filename="uploads/default-avatar.png") }}';
+                    }
+                </script>
+
+                <!-- Toggle Buttons -->
+                <div class="sidebar-toggle open-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="sidebar-toggle close-toggle">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+
+            <!-- This is where child templates will inject their content -->
+            <div class="content-wrapper">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar toggle script -->
+    <script src="{{ url_for('static', filename='myjs.js') }}"></script>
+</body>
+
+</html>

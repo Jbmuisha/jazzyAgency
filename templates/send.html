@@ -1,0 +1,225 @@
+{% extends "clientHome.html" %}
+
+{% block body %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<!-- Fee Display Card -->
+<div class="fee-container">
+  <div class="fee-header" id="feeHeader">
+    <h2>Transaction Fees</h2>
+    <i class="fa-solid fa-chevron-down" id="toggleIcon"></i>
+  </div>
+
+  <div class="fee-card" id="feeCard">
+    <div class="fee-table-container">
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th>Amount Range ($)</th>
+            <th>Fee ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for min_amt, max_amt, fee in fee_ranges %}
+          <tr>
+            <td>${{ "%d"|format(min_amt) }} - ${{ "%d"|format(max_amt) }}</td>
+            <td>${{ "%.2f"|format(fee) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="form-container">
+  <form action="{{ url_for('send') }}" method="POST" class="send-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="user_id" value="{{ user.id }}">
+    <div class="form-group">
+      <label for="sender_name">Sender's Full Name</label>
+      <input type="text" name="sender_name" id="sender_name" required placeholder="Your full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_name">Receiver's Full Name</label>
+      <input type="text" name="receiver_name" id="receiver_name" required placeholder="Receiver's full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="sender_email">Sender's Email</label>
+      <input type="email" name="sender_email" id="sender_email" required placeholder="Your email" />
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <input type="number" name="amount" id="amount" required placeholder="Amount to send" />
+    </div>
+
+    <div class="form-group">
+      <label for="sender_number">Sender's Number</label>
+      <input type="tel" name="sender_number" id="sender_number" required placeholder="Your phone number" />
+    </div>
+
+    <div class="form-group">
+      <label for="sender_country">Sender's Country</label>
+      <select name="sender_country" id="sender_country" required>
+        <option value="">-- Select Country --</option>
+        <option value="Congo">Congo</option>
+        <option value="North Cyprus">North Cyprus</option>
+        <option value="Turkey">Turkey</option>
+        <option value="France">France</option>
+        <option value="USA">USA</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="sending_method">Sending Method</label>
+      <select name="sending_method" id="sending_method" required>
+        <option value="">-- Select Method --</option>
+        <option value="Airtel Money">Airtel Money</option>
+        <option value="M-Pesa">M-Pesa</option>
+        <option value="Orange Money">Orange Money</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Cash Pickup">Cash Pickup</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_country">Receiver's Country</label>
+      <select name="receiver_country" id="receiver_country" required>
+        <option value="">-- Select Country --</option>
+        <option value="Congo">Congo</option>
+        <option value="North Cyprus">North Cyprus</option>
+        <option value="Turkey">Turkey</option>
+        <option value="France">France</option>
+        <option value="USA">USA</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_number">Receiver Number</label>
+      <input type="tel" name="receiver_number" id="receiver_number" required placeholder="Receiver's phone number" />
+    </div>
+
+    <button type="submit" class="send-btn">Submit</button>
+  </form>
+</div>
+
+<style>
+  /* Fee Container Styles */
+  .fee-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #2a2e39;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 7px 30px rgba(62, 9, 11, 0.3);
+  }
+
+  .fee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #3a404d;
+    color: #e1e1e1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .fee-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .fee-header:hover {
+    background: #4a4f5c;
+  }
+
+  .fee-card {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+  }
+
+  .fee-card.collapsed {
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .fee-table-container {
+    padding: 0 15px 15px;
+  }
+
+  .fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e1e1e1;
+  }
+
+  .fee-table th,
+  .fee-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #3a404d;
+  }
+
+  .fee-table th {
+    background: #3a404d;
+    color: #f39264;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+
+  .fee-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .fee-table td:last-child {
+    color: #f39264;
+    font-weight: 600;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .fee-container {
+      margin: 15px;
+    }
+
+    .fee-table th,
+    .fee-table td {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const feeHeader = document.getElementById('feeHeader');
+    const feeCard = document.getElementById('feeCard');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    // Toggle fee card visibility
+    feeHeader.addEventListener('click', function () {
+      feeCard.classList.toggle('collapsed');
+      toggleIcon.classList.toggle('fa-chevron-up');
+      toggleIcon.classList.toggle('fa-chevron-down');
+    });
+  });
+</script>
+
+{% endblock %}

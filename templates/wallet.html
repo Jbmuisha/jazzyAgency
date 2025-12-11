@@ -1,0 +1,292 @@
+{% extends "adminView.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/transactions.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div class="containerlearder">
+    <div class="leaderboard">
+        <header>
+            <h1 class="leaderboard__title">
+                <span class="leaderboard__title--top">Transaction</span>
+                <span class="leaderboard__title--bottom">History</span>
+            </h1>
+            <svg class="leaderboard__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+            </svg>
+        </header>
+
+        <!-- Solde / Revenue / Saving / Expense -->
+        <div class="card-body">
+            <p>
+                <span style="font-size: 10px;" class="text-gray">Current Balance:</span><br>
+                <span class="text-Black" style="font-weight: bold; font-size: 40px;">20000<i
+                        class="fa-solid fa-dollar-sign"></i></span>
+            </p>
+            <hr style="width: 100%; border: none; height: 1px; background-color: #e0e0e0; margin: 20px 0;">
+            <div class="cardVIEW">
+                <div class="RevenueView">
+                    <p>
+                        <span style="font-size: 10px;">Revenue</span><br>
+                        <span class="text-Black" style="font-weight: bold; font-size: 40px;"><i
+                                class="fa-solid fa-dollar-sign"></i>0</span>
+                    </p>
+                </div>
+                <div class="SavingView">
+                    <p>
+                        <span style="font-size: 10px;">Saving</span><br>
+                        <span class="text-gray" style="font-weight: bold; font-size: 40px;"><i
+                                class="fa-solid fa-dollar-sign"></i>0</span>
+                    </p>
+                </div>
+                <div class="expenseView">
+                    <p>
+                        <span style="font-size: 10px;">Expense</span><br>
+                        <span class="text-Black" style="font-weight: bold; font-size: 40px;"><i
+                                class="fa-solid fa-dollar-sign"></i>0</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <div class="optionMenu">
+            <div class="menu">
+                <ul>
+                    <li>
+                        <a href="#" class="menu-trigger active" data-target="mobile">Mobile</a>
+                        <ul class="submenu" id="mobile-submenu">
+                            <li><a href="#" id="showAll" class="active">Show All</a></li>
+                            <li><a href="#" id="mpesa">M-Pesa</a></li>
+                            <li><a href="#" id="orangeMoney">Orange Money</a></li>
+                            <li><a href="#" id="airtelMoney">Airtel Money</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="menu-trigger" data-target="paypal" id="paypal">PayPal</a></li>
+                    <li><a href="#" class="menu-trigger" data-target="stats" id="stats">Statistique</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Container -->
+<div class="transactionsContainer">
+
+    <!-- Mobile Money Transactions -->
+    <div class="transactionView mpesa">
+        <h2 class="section-title">Mobile Money Transactions</h2>
+        
+        <!-- Debug Info -->
+        <div style="background: #f8f9fa; padding: 10px; margin-bottom: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+            <strong>Debug Info ({{ transactions|length }} transactions):</strong>
+            <button onclick="this.parentElement.style.display='none'" style="float: right;">×</button>
+            <hr style="margin: 5px 0;">
+            {% if transactions %}
+                {% for t in transactions %}
+                    <div class="transaction-row {% if loop.index is even %}even{% else %}odd{% endif %}">
+                        <strong>#{{ t.id }}</strong> | 
+                        {{ t.sending_method }} | 
+                        {{ "%.2f"|format(t.amount) }} USD | 
+                        <span class="status-{{ t.status|lower }}">{{ t.status }}</span> |
+                        {{ t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else 'N/A' }}
+                    </div>
+                {% endfor %}
+            {% else %}
+            {% endif %}
+        </div>
+        
+        <!-- Transactions List -->
+        <div id="transactions-container">
+            {% if transactions %}
+                {% for transaction in transactions %}
+                <div class="transaction-card">
+                    <div class="transaction-header">
+                        <div class="transaction-avatar">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="transaction-title">
+                            <h3>{{ transaction.sender_name|default('Inconnu') }} → {{ transaction.receiver_name|default('Inconnu') }}</h3>
+                            <div class="transaction-meta">
+                                <span class="transaction-id">#{{ transaction.id }}</span>
+                                <span class="transaction-date">
+                                    <i class="far fa-clock"></i> 
+                                    {{ transaction.created_at.strftime('%b %d, %Y %I:%M %p') if transaction.created_at else 'Date inconnue' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="transaction-amount {% if transaction.amount >= 0 %}positive{% else %}negative{% endif %}">
+                            {{ "+" if transaction.amount >= 0 else "-" }}${{ "%.2f"|format(transaction.amount|abs) }}
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Méthode de paiement:</span>
+                            <span class="detail-value">
+                                <i class="fas fa-{{ 'mobile-alt' if 'mobile' in transaction.sending_method|lower else 'credit-card' }}"></i>
+                                {{ transaction.sending_method|default('Non spécifiée') }}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Statut:</span>
+                            <span class="status-badge status-{{ transaction.status|lower }}">
+                                <i class="fas {% if transaction.status|lower == 'completed' %}fa-check-circle
+                                       {% elif transaction.status|lower == 'pending' %}fa-clock
+                                       {% elif transaction.status|lower == 'failed' %}fa-times-circle
+                                       {% else %}fa-info-circle{% endif %}"></i>
+                                {{ transaction.status|default('En attente')|title }}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Frais:</span>
+                            <span class="detail-value">${{ "%.2f"|format(transaction.fee|default(0)) }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Montant total:</span>
+                            <span class="detail-value">${{ "%.2f"|format(transaction.total_amount|default(transaction.amount)) }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-transactions">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucune transaction mobile money trouvée</p>
+                    <small>Les nouvelles transactions apparaîtront ici</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PayPal -->
+    <div class="transactionView paypal" style="display:none;">
+        <h2 class="section-title">PayPal Transactions</h2>
+        {% for paypal_transaction in paypal_transactions %}
+        <div class="transaction-profile">
+            <img src="{{ url_for('static', filename='image/paypal-logo.png') }}" alt="PayPal"
+                class="transaction-avatar">
+            <div class="transaction-info">
+                <span>{{ paypal_transaction.receiver_name }}</span>
+                <span class="transaction-amount amount-{{ 'credit' if paypal_transaction.amount >= 0 else 'debit' }}">
+                    {{ "+" if paypal_transaction.amount >= 0 else "-" }}${{ "%.2f"|format(paypal_transaction.amount|abs)
+                    }}
+                </span>
+            </div>
+            <div class="transaction-meta">
+                <span>{{ paypal_transaction.created_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+                <span class="status-{{ paypal_transaction.status|lower }}">{{ paypal_transaction.status|title }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-transactions">No PayPal transactions found.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Statistiques (vide pour le moment) -->
+    <div class="transactionView stats" style="display:none;">
+        <h2 class="section-title">Statistiques</h2>
+        <p>Graphes et statistiques ici.</p>
+    </div>
+
+</div>
+
+<script>
+    // Show transactions based on payment method
+    function filterTransactions(paymentMethod) {
+        const transactions = document.querySelectorAll('.transaction-profile');
+        let hasVisibleTransactions = false;
+        
+        transactions.forEach(transaction => {
+            const transactionMethod = transaction.getAttribute('data-payment-method') || '';
+            if (!paymentMethod || transactionMethod.includes(paymentMethod.toLowerCase())) {
+                transaction.style.display = 'flex';
+                hasVisibleTransactions = true;
+            } else {
+                transaction.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no transactions message
+        const noTransactionsMsg = document.querySelector('.no-transactions');
+        if (noTransactionsMsg) {
+            noTransactionsMsg.style.display = hasVisibleTransactions ? 'none' : 'block';
+        }
+    }
+
+    // Switch between views
+    function showMobileMoney(paymentMethod = '') {
+        document.querySelector('.mpesa').style.display = 'block';
+        document.querySelector('.paypal').style.display = 'none';
+        document.querySelector('.stats').style.display = 'none';
+        setActiveMenu(paymentMethod || 'mobile');
+        filterTransactions(paymentMethod);
+    }
+
+    function showPaypal() {
+        document.querySelector('.mpesa').style.display = 'none';
+        document.querySelector('.paypal').style.display = 'block';
+        document.querySelector('.stats').style.display = 'none';
+        setActiveMenu('paypal');
+    }
+
+    function showStats() {
+        document.querySelector('.mpesa').style.display = 'none';
+        document.querySelector('.paypal').style.display = 'none';
+        document.querySelector('.stats').style.display = 'block';
+        setActiveMenu('stats');
+    }
+
+    // Active menu
+    function setActiveMenu(type) {
+        document.querySelectorAll('.menu-trigger, #mobile-submenu a').forEach(el => el.classList.remove('active'));
+        if (type === 'paypal') {
+            document.getElementById('paypal').classList.add('active');
+        } else if (type === 'stats') {
+            document.getElementById('stats').classList.add('active');
+        } else if (type === 'm-pesa') {
+            document.getElementById('mpesa').classList.add('active');
+        } else if (type === 'orange money') {
+            document.getElementById('orangeMoney').classList.add('active');
+        } else if (type === 'airtel money') {
+            document.getElementById('airtelMoney').classList.add('active');
+        } else {
+            document.getElementById('showAll').classList.add('active');
+        }
+    }
+
+    // Event listeners
+    document.getElementById('paypal').addEventListener('click', e => { e.preventDefault(); showPaypal(); });
+    document.getElementById('stats').addEventListener('click', e => { e.preventDefault(); showStats(); });
+    document.getElementById('showAll').addEventListener('click', e => { e.preventDefault(); showMobileMoney(''); });
+    document.getElementById('mpesa').addEventListener('click', e => { e.preventDefault(); showMobileMoney('m-pesa'); });
+    document.getElementById('orangeMoney').addEventListener('click', e => { e.preventDefault(); showMobileMoney('orange money'); });
+    document.getElementById('airtelMoney').addEventListener('click', e => { e.preventDefault(); showMobileMoney('airtel money'); });
+
+    // Menu dropdown
+    document.querySelectorAll('.menu-trigger').forEach(trigger => {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = this.getAttribute('data-target');
+            document.querySelectorAll('.submenu').forEach(menu => {
+                if (menu.id !== `${target}-submenu`) menu.style.display = 'none';
+            });
+            const submenu = document.getElementById(`${target}-submenu`);
+            if (submenu) submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.menu')) document.querySelectorAll('.submenu').forEach(menu => menu.style.display = 'none');
+    });
+
+    // Initial view
+    document.addEventListener('DOMContentLoaded', () => { showMobileMoney(); });
+</script>
+
+{% endblock %}

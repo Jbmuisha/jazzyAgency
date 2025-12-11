@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='mycss.css') }}" />
+    <style>
+        img {
+            max-width: 170px;
+            border-radius: 50%;
+            margin-bottom: -60px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .inputBox {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            cursor: pointer;
+        }
+
+        .forgetParagraph {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fullcontainer">
+        <div class="container">
+            <!-- Decorative balls -->
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+
+            <form action="/sigin" method="POST" class="form" aria-label="Sign Up Form" autocomplete="off">
+                <img src="{{ url_for('static', filename='image/logo copie 2.png') }}" alt="logo" />
+
+                <div class="inputBox">
+                    <label class="inputText" for="username">Full Name</label>
+                    <input type="text" name="username" id="username" placeholder="Please enter your Full Name" required
+                        autocomplete="name" />
+                </div>
+
+                <div class="inputBox">
+                    <label class="inputText" for="email">Email</label>
+                    <input type="email" name="email" id="email" placeholder="Please enter your email" required
+                        autocomplete="email" />
+                </div>
+
+                <div class="inputBox">
+                    <label for="password" class="inputText">New Password</label>
+                    <input type="password" name="password" id="password" placeholder="Please enter your password"
+                        required autocomplete="new-password" />
+                </div>
+
+                <div class="inputBox">
+                    <label for="confirm_password" class="inputText">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password"
+                        placeholder="Please confirm your password" required autocomplete="new-password" />
+                </div>
+
+                <button class="btn" type="submit">Sign Up</button>
+
+                <div class="forgetParagraph">
+                    <p>Get back to login page <a href="/login">Login</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

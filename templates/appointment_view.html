@@ -1,0 +1,132 @@
+{% extends "adminView.html" %}
+{% block content %}
+<style>
+    .appointment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .appointment-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .appointment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .appointment-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .appointment-details {
+        display: grid;
+        gap: 10px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #555;
+    }
+
+    .detail-value {
+        text-align: right;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        justify-content: flex-end;
+    }
+
+    .action-buttons button {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-accept {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .btn-reject {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .btn-accept:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-reject:hover {
+        background-color: #d32f2f;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-accept:active,
+    .btn-reject:active {
+        transform: translateY(0);
+    }
+</style>
+
+<div class="appointment-grid">
+    {% for appointment in appointments %}
+    <div class="appointment-card">
+        <div class="appointment-header">
+            <h3>{{ appointment.name }}</h3>
+        </div>
+        <div class="appointment-details">
+            <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ appointment.email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ appointment.date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Time:</span>
+                <span class="detail-value">{{ appointment.time }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Service:</span>
+                <span class="detail-value">{{ appointment.service }}</span>
+            </div>
+
+            <form method="POST" class="action-buttons">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-accept"
+                    formaction="{{ url_for('accept_appointment', appointment_id=appointment.id) }}">Accept</button>
+                <button type="submit" class="btn-reject"
+                    formaction="{{ url_for('reject_appointment', appointment_id=appointment.id) }}">Reject</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

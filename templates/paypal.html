@@ -1,0 +1,904 @@
+{% extends "clientHome.html" %}
+
+{% block body %}
+<div class="paypal-container">
+    <div class="header-section">
+        <h1><i class="fab fa-paypal"></i> PayPal Services</h1>
+        <p class="subtitle">Send and receive money with ease</p>
+    </div>
+    <div class="fee-header">
+        <h2> PayPal transaction fees</h2>
+        <i class="fa-solid fa-chevron-down" id="toggleIcon"></i>
+    </div>
+
+    <div class="fee-card" id="feeCard">
+        <div class="fee-table-container">
+            <table class="fee-table">
+                <thead>
+                    <tr>
+                        <th>Amount Range ($)</th>
+                        <th>Fee ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="feeTableBody">
+                    <tr>
+                        <td>1 – 25</td>
+                        <td>6.99</td>
+                    </tr>
+                    <tr>
+                        <td>26 – 55</td>
+                        <td>9.99</td>
+                    </tr>
+                    <tr>
+                        <td>56 – 75</td>
+                        <td>12.99</td>
+                    </tr>
+                    <tr>
+                        <td>76 – 100</td>
+                        <td>15.99</td>
+                    </tr>
+                    <tr>
+                        <td>101 – 125</td>
+                        <td>20.99</td>
+                    </tr>
+                    <tr>
+                        <td>126 – 200</td>
+                        <td>25.99</td>
+                    </tr>
+                    <tr>
+                        <td>201 – 300</td>
+                        <td>33.99</td>
+                    </tr>
+                    <tr>
+                        <td>301 – 400</td>
+                        <td>42.99</td>
+                    </tr>
+                    <tr>
+                        <td>401 – 500</td>
+                        <td>51.99</td>
+                    </tr>
+                    <tr>
+                        <td>501 – 600</td>
+                        <td>61.99</td>
+                    </tr>
+                    <tr>
+                        <td>601 – 700</td>
+                        <td>80.99</td>
+                    </tr>
+                    <tr>
+                        <td>701 – 800</td>
+                        <td>90.99</td>
+                    </tr>
+                    <tr>
+                        <td>801 – 900</td>
+                        <td>110.99</td>
+                    </tr>
+                    <tr>
+                        <td>901 – 1,000</td>
+                        <td>120.99</td>
+                    </tr>
+                    <tr>
+                        <td>1,001 – 1,500</td>
+                        <td>133.99</td>
+                    </tr>
+                    <tr>
+                        <td>1,501 – 2,000</td>
+                        <td>185.99</td>
+                    </tr>
+                    <tr>
+                        <td>2,001 – 2,500</td>
+                        <td>225.99</td>
+                    </tr>
+                    <tr>
+                        <td>2,501 – 3,000</td>
+                        <td>260.99</td>
+                    </tr>
+                    <tr>
+                        <td>3,001 – 3,500</td>
+                        <td>295.99</td>
+                    </tr>
+                    <tr>
+                        <td>3,501 – 4,000</td>
+                        <td>335.99</td>
+                    </tr>
+                    <tr>
+                        <td>4,001 – 4,500</td>
+                        <td>395.99</td>
+                    </tr>
+                    <tr>
+                        <td>4,501 – 5,000</td>
+                        <td>440.99</td>
+                    </tr>
+                    <tr>
+                        <td>5,001 – 5,500</td>
+                        <td>485.99</td>
+                    </tr>
+                    <tr>
+                        <td>5,501 – 6,000</td>
+                        <td>530.99</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="card-container">
+        <!-- Send Money Card -->
+        <div class="action-card" id="sendCard">
+            <div class="card-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h3>Send Money</h3>
+            <p>Quickly send money to friends, family, or business accounts via PayPal.</p>
+            <button class="action-btn" id="sendBtn">Send Now</button>
+        </div>
+
+        <!-- Receive Money Card -->
+        <div class="action-card" id="receiveCard">
+            <div class="card-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <h3>Receive Money</h3>
+            <p>Request and receive payments directly to your PayPal account.</p>
+            <button class="action-btn" id="receiveBtn">Request Now</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <!-- Send Money Form -->
+        <div class="payment-form" id="sendForm">
+            <div class="form-header">
+                <h3><i class="fas fa-paper-plane"></i> Send Money</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="sendMoneyForm" method="POST" action="{{ url_for('paypal') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="form-group">
+                    <label for="amount">Amount (USD)</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" min="1" required>
+                    </div>
+                    <div class="fee-calculator">
+                        <div class="fee-details">
+                            <span>Fee: </span>
+                            <span id="feeAmount">$0.00</span>
+                        </div>
+                        <div class="fee-total">
+                            <span>Total: </span>
+                            <span id="totalAmount">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sender_name">Sender's Name</label>
+                    <input type="text" id="sender_name" placeholder="Enter full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="receiver_name">Recipient's Name</label>
+                    <input type="text" id="receiver_name" placeholder="Enter full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="receiver_email">Recipient's Email</label>
+                    <input type="email" id="receiver_email" placeholder="name@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="receiver_number">Phone Number (Optional)</label>
+                    <input type="tel" id="receiver_number" placeholder="+1 (___) ___-____">
+                </div>
+
+                <div class="form-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Send Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+
+    </div>
+</div>
+
+<style>
+    /* Fees Table Styles */
+    .fee-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+        background: white;
+        font-size: 0.9rem;
+    }
+
+    .fee-table th,
+    .fee-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .fee-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #003087;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .fee-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .fee-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .fee-table td:last-child {
+        font-weight: 600;
+        color: #28a745;
+        text-align: right;
+    }
+
+    .fee-table td:first-child {
+        color: #495057;
+    }
+
+    .fee-table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+    }
+
+    .fee-table-container::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .fee-table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .fee-table-container::-webkit-scrollbar-thumb {
+        background: #0070ba;
+        border-radius: 3px;
+    }
+
+    .fee-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        cursor: pointer;
+        border: 1px solid #e9ecef;
+    }
+
+    .fee-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #003087;
+    }
+
+    .fee-header i {
+        transition: transform 0.3s ease;
+    }
+
+    .fee-header.collapsed i {
+        transform: rotate(-90deg);
+    }
+
+    .fee-card {
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .fee-card.collapsed {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Base Styles */
+    .paypal-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header-section h1 {
+        color: #003087;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .header-section .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    /* Card Container */
+    .card-container {
+        display: flex;
+        gap: 25px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Action Cards */
+    .action-card {
+        background: #fff;
+        padding: 30px 25px;
+        flex: 1;
+        min-width: 280px;
+        max-width: 350px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid #e1e4e6;
+        cursor: pointer;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 20px;
+        background: #f5f7fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .action-card:hover .card-icon {
+        background: #0070ba;
+        transform: scale(1.05);
+    }
+
+    .action-card:hover .card-icon i {
+        color: white;
+    }
+
+    .card-icon i {
+        font-size: 1.8rem;
+        color: #0070ba;
+        transition: all 0.3s ease;
+    }
+
+    .action-card h3 {
+        color: #003087;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+    }
+
+    .action-card p {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .action-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        background: #0070ba;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1rem;
+    }
+
+    .action-btn:hover {
+        background: #005ea6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 112, 186, 0.2);
+    }
+
+    /* Forms */
+    .form-container {
+        position: relative;
+        margin: 40px 0;
+    }
+
+    .payment-form {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        max-width: 600px;
+        margin: 0 auto;
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .payment-form.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-header h3 {
+        color: #003087;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-header h3 i {
+        color: #0070ba;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #6c757d;
+        padding: 5px;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+        color: #003087;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e1e4e6;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e1e4e6;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .input-group .input-prefix {
+        position: absolute;
+        left: 15px;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 1.1rem;
+        pointer-events: none;
+        transition: color 0.2s;
+    }
+
+    .input-group .form-control {
+        padding-left: 45px;
+    }
+
+    .input-group:focus-within .input-prefix {
+        color: #0070ba;
+    }
+
+    .input-prefix {
+        position: absolute;
+        left: 15px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 16px 14px 45px;
+        border: 2px solid #e1e4e6;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control:focus {
+        border-color: #0070ba;
+        box-shadow: 0 0 0 3px rgba(0, 112, 186, 0.1);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: #0070ba;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .submit-btn:hover {
+        background: #005ea6;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .submit-btn:hover {
+        background: #005ea6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 112, 186, 0.25);
+    }
+
+    .submit-btn i {
+        font-size: 1.1em;
+    }
+
+    /* Fee Calculator Styles */
+    .fee-calculator {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .fee-details,
+    .fee-total {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+    }
+
+    .fee-total {
+        font-weight: 600;
+        color: #28a745;
+        border-top: 1px solid #dee2e6;
+        padding-top: 8px;
+        margin-top: 8px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-card {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .payment-form {
+            padding: 20px;
+        }
+    }
+</style>
+
+<script>
+    // Fee structure based on the provided table
+    const feeStructure = [
+        { min: 1, max: 25, fee: 6.99 },
+        { min: 26, max: 55, fee: 9.99 },
+        { min: 56, max: 75, fee: 12.99 },
+        { min: 76, max: 100, fee: 15.99 },
+        { min: 101, max: 125, fee: 20.99 },
+        { min: 126, max: 200, fee: 25.99 },
+        { min: 201, max: 300, fee: 33.99 },
+        { min: 301, max: 400, fee: 42.99 },
+        { min: 401, max: 500, fee: 51.99 },
+        { min: 501, max: 600, fee: 61.99 },
+        { min: 601, max: 700, fee: 80.99 },
+        { min: 701, max: 800, fee: 90.99 },
+        { min: 801, max: 900, fee: 110.99 },
+        { min: 901, max: 1000, fee: 120.99 },
+        { min: 1001, max: 1500, fee: 133.99 },
+        { min: 1501, max: 2000, fee: 185.99 },
+        { min: 2001, max: 2500, fee: 225.99 },
+        { min: 2501, max: 3000, fee: 260.99 },
+        { min: 3001, max: 3500, fee: 295.99 },
+        { min: 3501, max: 4000, fee: 335.99 },
+        { min: 4001, max: 4500, fee: 395.99 },
+        { min: 4501, max: 5000, fee: 440.99 },
+        { min: 5001, max: 5500, fee: 485.99 },
+        { min: 5501, max: 6000, fee: 530.99 }
+    ];
+
+    // Function to calculate fee based on amount
+    function calculateFee(amount) {
+        if (!amount || amount <= 0) return 0;
+
+        // Convert to number in case it's a string
+        amount = parseFloat(amount);
+
+        // Find the matching fee tier
+        const tier = feeStructure.find(tier => amount >= tier.min && amount <= tier.max);
+        return tier ? tier.fee : 0;
+    }
+
+    // Format currency
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+
+    // Update fee display
+    function updateFeeDisplay(amount, feeElement, totalElement, isReceive = false) {
+        const fee = calculateFee(amount);
+        const total = isReceive ? amount - fee : amount + fee;
+
+        feeElement.textContent = formatCurrency(fee);
+        totalElement.textContent = formatCurrency(total);
+
+        return { fee, total };
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get fee calculator elements
+        const amountInput = document.getElementById('amount');
+        const feeAmount = document.getElementById('feeAmount');
+        const totalAmount = document.getElementById('totalAmount');
+
+        const requestAmountInput = document.getElementById('request_amount');
+        const receiveFeeAmount = document.getElementById('receiveFeeAmount');
+        const receiveTotalAmount = document.getElementById('receiveTotalAmount');
+
+        // Add input event listeners for fee calculation
+        if (amountInput && feeAmount && totalAmount) {
+            amountInput.addEventListener('input', function () {
+                updateFeeDisplay(this.value, feeAmount, totalAmount);
+            });
+        }
+
+        if (requestAmountInput && receiveFeeAmount && receiveTotalAmount) {
+            requestAmountInput.addEventListener('input', function () {
+                updateFeeDisplay(this.value, receiveFeeAmount, receiveTotalAmount, true);
+            });
+        }
+        const feeHeader = document.querySelector('.fee-header');
+        const feeCard = document.getElementById('feeCard');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (feeHeader && feeCard) {
+            feeHeader.addEventListener('click', function () {
+                feeCard.classList.toggle('collapsed');
+                feeHeader.classList.toggle('collapsed');
+                toggleIcon.classList.toggle('fa-chevron-down');
+                toggleIcon.classList.toggle('fa-chevron-up');
+            });
+        }
+
+        // Get all necessary elements
+        const sendCard = document.getElementById('sendCard');
+        const receiveCard = document.getElementById('receiveCard');
+        const sendForm = document.getElementById('sendForm');
+        const receiveForm = document.getElementById('receiveForm');
+        const closeButtons = document.querySelectorAll('.close-btn');
+
+        // Show send form when send card is clicked
+        sendCard.addEventListener('click', function () {
+            hideAllForms();
+            sendForm.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Show receive form when receive card is clicked
+        receiveCard.addEventListener('click', function () {
+            hideAllForms();
+            receiveForm.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Close buttons functionality
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const form = this.closest('.payment-form');
+                form.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close form when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.payment-form') && !e.target.closest('.action-card')) {
+                hideAllForms();
+            }
+        });
+
+        // Form submission handler for sending money
+        if (document.getElementById('sendMoneyForm')) {
+            document.getElementById('sendMoneyForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                try {
+                    // Get form data
+                    const amount = parseFloat(document.getElementById('amount').value);
+                    const fee = parseFloat(document.getElementById('feeAmount').textContent.replace('$', '')) || 0;
+                    const totalAmount = amount + fee;
+                    const senderName = document.getElementById('sender_name').value;
+                    const receiverName = document.getElementById('receiver_name').value;
+                    const receiverEmail = document.getElementById('receiver_email').value;
+                    const phoneNumber = document.getElementById('receiver_number').value || '';
+
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('sender_name', senderName);
+                    formData.append('receiver_name', receiverName);
+                    formData.append('receiver_email', receiverEmail);
+                    formData.append('amount', amount);
+                    formData.append('fee', fee);
+                    formData.append('total_amount', totalAmount);
+                    formData.append('receiver_number', phoneNumber);
+
+                    // Send request to server
+                    // Get CSRF token from meta tag
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    const response = await fetch('{{ url_for("paypal") }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    if (response.redirected) {
+                        // If there's a redirect (like to login page), follow it
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // Success - show success message
+                        alert('Payment processing started! You will receive a confirmation email shortly.');
+                        // Reset form
+                        this.reset();
+                        // Hide the form
+                        document.getElementById('sendForm').classList.remove('active');
+                        document.body.style.overflow = '';
+                    } else {
+                        // Show error message
+                        throw new Error(result.error || 'Failed to process payment');
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert(`Error: ${error.message || 'Failed to process payment. Please try again.'}`);
+                } finally {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+
+        if (document.getElementById('receiveMoneyForm')) {
+            document.getElementById('receiveMoneyForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                // Add your form submission logic here
+                alert('Request sent!');
+            });
+        }
+
+        // Helper function to hide all forms
+        function hideAllForms() {
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+</script>
+
+{% endblock %}

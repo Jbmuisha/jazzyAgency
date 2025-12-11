@@ -1,0 +1,137 @@
+{% extends "adminView.html" %}
+{% block content %}
+<div class="DeptGeneralContainer">
+
+    <div class="deptHeader">
+        <div class="filter_container">
+            <div class="filter_group">
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="all">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="partially_paid">Partially Paid</option>
+                    <option value="paid">Paid</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+
+
+        </div>
+
+        <div class="search_container">
+            <input type="text" id="search" placeholder="Search by name or ID...">
+            <button id="searchBtn" class="btn1 btn-secondary">Search</button>
+        </div>
+
+        <div class="formHider">
+            <button id="formBtn" class="btn1 btn-secondary">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+
+
+    </div>
+
+    <div class="DeptForm">
+        <form action="{{ url_for('dept') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if dept %}
+            <input type="hidden" name="id" value="{{ dept.id }}">
+            {% endif %}
+
+
+
+            <div class="form-group">
+                <label for="Borrower_name">Borrower Name</label>
+                <input type="text" name="Borrower_name" id="Borrower_name" required>
+            </div>
+            <div class="form-group">
+                <label for="dept_date">Dept Date</label>
+                <input type="date" name="dept_date" id="dept_date" required>
+            </div>
+            <div class="form-group">
+                <label for="expected_return_date">Expected Return Date</label>
+                <input type="date" name="expected_return_date" id="expected_return_date" required>
+            </div>
+            <div class="form-group">
+                <label for="dept_amount">Dept Amount</label>
+                <input type="number" name="dept_amount" id="dept_amount" required>
+            </div>
+            <div class="form-group">
+                <label for="dept_type">Dept Type</label>
+                <input type="text" name="dept_type" id="dept_type" required>
+            </div>
+            <div class="form-group">
+                <label for="dept_status">Dept Status</label>
+                <select name="dept_status" id="dept_status">
+                    <option value="pending">Pending</option>
+                    <option value="partially_paid">Partially Paid</option>
+                    <option value="paid">Paid</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dept_description">Dept Description</label>
+                <textarea name="dept_description" id="dept_description" required></textarea>
+            </div>
+            <button type="submit">Add Dept</button>
+        </form>
+
+    </div>
+
+    <div class="deptBody">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Borrower Name</th>
+                    <th>Dept Date</th>
+                    <th>Expected Return Date</th>
+                    <th>Dept Amount</th>
+                    <th>Dept Type</th>
+                    <th>Dept Status</th>
+                    <th>Dept Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if depts %}
+                    {% for dept in depts %}
+                    <tr>
+                        <td>{{ dept.Borrower_name }}</td>
+                        <td>{{ dept.dept_date.strftime('%Y-%m-%d') if dept.dept_date else '' }}</td>
+                        <td>{{ dept.expected_return_date.strftime('%Y-%m-%d') if dept.expected_return_date else '' }}</td>
+                        <td>${{ "%.2f"|format(dept.dept_amount|float) }}</td>
+                        <td>{{ dept.dept_type }}</td>
+                        <td>
+                            <span class="status-badge status-{{ dept.dept_status|lower|replace(' ', '-') }}">
+                                {{ dept.dept_status }}
+                            </span>
+                        </td>
+                        <td>{{ dept.dept_description }}</td>
+                        <td class="actions">
+                            <button class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No debt records found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+
+    {% endblock %}

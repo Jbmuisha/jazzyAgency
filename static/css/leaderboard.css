@@ -1,0 +1,140 @@
+.leaderboard {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  overflow: hidden;
+  transform: scale(1.05);
+  transform-origin: top;
+  margin: 20px auto;
+}
+
+
+.leaderboard__title {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.leaderboard__title--top {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard__title--bottom {
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.9;
+  letter-spacing: 1.5px;
+}
+
+.leaderboard__icon {
+  width: 80px;
+  height: 80px;
+  opacity: 0.2;
+  left: 15%;
+}
+
+.leaderboard__profiles {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transaction-profile {
+  display: grid;
+  grid-template-columns: 45px 1fr auto;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.transaction-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.transaction-avatar:hover {
+  opacity: 0.8;
+}
+
+.transaction-name {
+  font-size: 18px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.transaction-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: #2d3436;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  font-size: 11px;
+  top: 15px;
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .leaderboard {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .leaderboard header {
+    padding: 16px;
+  }
+
+  .leaderboard__title--top {
+    font-size: 24px;
+  }
+
+  .leaderboard__title--bottom {
+    font-size: 14px;
+  }
+
+  .leaderboard__icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .leaderboard__profiles {
+    padding: 15px;
+  }
+
+  .transaction-profile {
+    grid-template-columns: 40px 1fr 100px;
+    padding: 12px 15px;
+  }
+
+  .transaction-avatar {
+    width: 38px;
+    height: 38px;
+  }
+}

@@ -1,0 +1,65 @@
+{% extends "adminView.html" %}
+{% block content %}
+
+<div class="benefitContainer" style="display:flex; gap:30px; flex-wrap:wrap;">
+
+    <!-- Mobile Money Card -->
+    <div class="mobileTransactionCard"
+        style="border:1px solid #ccc; border-radius:10px; padding:20px; width:300px; background:#f0f8ff;">
+        <h2 style="text-align:center;">Mobile Transaction Benefit</h2>
+        <div class="mothnlyBenefit" style="margin-top:15px;">
+            <h4>Mensuel</h4>
+            <p style="font-size:1.5em; font-weight:bold; text-align:center;">{{ "{:,.2f}".format(mobile_month) }} $</p>
+        </div>
+        <div class="yearlyBenefit" style="margin-top:15px;">
+            <h4>Annuel</h4>
+            <p style="font-size:1.5em; font-weight:bold; text-align:center;">{{ "{:,.2f}".format(mobile_year) }} $</p>
+        </div>
+    </div>
+
+    <!-- PayPal Card -->
+    <div class="paypalTransactionCard"
+        style="border:1px solid #ccc; border-radius:10px; padding:20px; width:300px; background:#fff0f5;">
+        <h2 style="text-align:center;">PayPal Transaction Benefit</h2>
+        <div class="mothnlyBenefit" style="margin-top:15px;">
+            <h4>Mensuel</h4>
+            <p style="font-size:1.5em; font-weight:bold; text-align:center;">{{ "{:,.2f}".format(paypal_month) }} $</p>
+        </div>
+        <div class="yearlyBenefit" style="margin-top:15px;">
+            <h4>Annuel</h4>
+            <p style="font-size:1.5em; font-weight:bold; text-align:center;">{{ "{:,.2f}".format(paypal_year) }} $</p>
+        </div>
+    </div>
+
+    <div class="tithe_card" style="border:1px solid #ccc; border-radius:10px; padding:20px; width:300px; background:#f0f8ff; margin-top: 20px;">
+        <h2 style="text-align:center;">Tithe Status</h2>
+        <div style="text-align: center; margin: 15px 0;">
+            <p style="font-size: 1.2em; margin-bottom: 10px;">
+                Tithe Amount: <strong>{{ "%0.2f"|format(tithe_total) }} $</strong>
+            </p>
+            
+            {% if tithe_paid %}
+                <div style="color: #28a745; margin: 10px 0;">
+                    <i class="fas fa-check-circle" style="font-size: 24px;"></i>
+                    <p>Paid on {{ tithe_paid_date }}</p>
+                </div>
+            {% else %}
+                <div style="color: #dc3545; margin: 10px 0;">
+                    <i class="fas fa-times-circle" style="font-size: 24px;"></i>
+                    <p>Not paid yet</p>
+                </div>
+                <form method="POST" action="{{ url_for('benefit') }}" style="margin-top: 15px;">
+                    <button type="submit" name="mark_tithe_paid" class="btn btn-success">
+                        <i class="fas fa-check"></i> Mark as Paid
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+<style>
+
+</style>
+
+{% endblock %}

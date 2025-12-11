@@ -1,0 +1,357 @@
+{% extends "adminView.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Balance Card -->
+    <div class="balance-card">
+        <div class="balance-header">
+            <span class="balance-label">Current Balance</span>
+            <span class="balance-amount">20000 <i class="fa-solid fa-dollar-sign"></i></span>
+        </div>
+        
+        <div class="balance-stats">
+            <div class="stat-item">
+                <span class="stat-label">Revenue</span>
+                <span class="stat-value">0 <i class="fa-solid fa-dollar-sign"></i></span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Saving</span>
+                <span class="stat-value">0 <i class="fa-solid fa-dollar-sign"></i></span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Expense</span>
+                <span class="stat-value">0 <i class="fa-solid fa-dollar-sign"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Menu -->
+    <div class="filter-menu">
+        <div class="filter-group">
+            <a href="#" class="filter-btn active" data-filter="all">Show All</a>
+            <a href="#" class="filter-btn" data-filter="mpesa">M-Pesa</a>
+            <a href="#" class="filter-btn" data-filter="orange_money">Orange Money</a>
+            <a href="#" class="filter-btn" data-filter="airtel_money">Airtel Money</a>
+            <a href="#" class="filter-btn" data-filter="paypal">PayPal</a>
+        </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="leaderboard">
+        <header>
+            <h1 class="leaderboard__title">
+                <span class="leaderboard__title--top">Transaction</span>
+                <span class="leaderboard__title--bottom">History</span>
+            </h1>
+            <svg class="leaderboard__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+        </header>
+        
+        <div class="leaderboard__profiles">
+            {% for transaction in transactions %}
+            <div class="transaction-profile" data-payment-method="{{ transaction.sending_method|lower }}">
+                {% set default_avatar = url_for('static', filename='image/default-avatar.png') %}
+                <img 
+                    src="{{ transaction.user.image_url or default_avatar }}" 
+                    alt="User" 
+                    class="transaction-avatar"
+                    onerror="this.onerror=null; this.src='{{ default_avatar }}'"
+                >
+                <div class="transaction-info">
+                    <h3 class="transaction-name">
+                        {{ transaction.sender_name }} → {{ transaction.receiver_name }}
+                    </h3>
+                    <div class="transaction-meta">
+                        <span class="transaction-id">#{{ transaction.id }}</span>
+                        <span class="transaction-date">
+                            {{ transaction.created_at.strftime('%b %d, %Y %I:%M %p') }}
+                        </span>
+                    </div>
+                    
+                    <!-- Transaction Details (initially hidden) -->
+                    <div class="transaction-details" style="display: none;">
+                        <div class="detail-row">
+                            <span class="label">From:</span>
+                            <span class="value">{{ transaction.sender_name }} ({{ transaction.sender_number }})</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">To:</span>
+                            <span class="value">{{ transaction.receiver_name }} ({{ transaction.receiver_number }})</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Fee:</span>
+                            <span class="value">{{ "%.2f"|format(transaction.fee) }} USD</span>
+                        </div>
+                        <div class="detail-row total">
+                            <span class="label">Total:</span>
+                            <span class="value">{{ "%.2f"|format(transaction.total_amount) }} USD</span>
+                        </div>
+                    </div>
+                    
+                    {% if transaction.status == 'pending' %}
+                    <div class="transaction-actions" style="margin-top: 10px;">
+                        <button class="btn btn-sm btn-outline-danger btn-cancel" data-transaction-id="{{ transaction.id }}">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary btn-retry" data-transaction-id="{{ transaction.id }}">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="transaction-amount {% if transaction.amount < 0 %}negative{% endif %}">
+                    {{ "%.2f"|format(transaction.amount) }}<span>USD</span>
+                    <span class="status-badge status-{{ transaction.status|lower }}">
+                        {{ transaction.status|title }}
+                    </span>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-transactions">
+                <p>No transactions found</p>
+                <p>Your transaction history will appear here.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Balance Card Styles */
+    .balance-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .balance-header {
+        margin-bottom: 20px;
+    }
+    
+    .balance-label {
+        display: block;
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+    }
+    
+    .balance-amount {
+        font-size: 32px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .balance-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .stat-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    /* Filter Menu */
+    .filter-menu {
+        margin-bottom: 20px;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        background: #f1f3f6;
+        border-radius: 20px;
+        font-size: 14px;
+        color: #5b7cfa;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background: #5b7cfa;
+        color: #fff;
+    }
+    
+    /* Transaction Details */
+    .transaction-details {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+    
+    .detail-row .label {
+        color: #7f8c8d;
+    }
+    
+    .detail-row .value {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .detail-row.total {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e0e0e0;
+        font-weight: 600;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .balance-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-group {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .filter-btn {
+            white-space: nowrap;
+        }
+    }
+</style>
+
+<script>
+    // Toggle transaction details
+    document.querySelectorAll('.transaction-profile').forEach(profile => {
+        profile.addEventListener('click', (e) => {
+            // Don't toggle if clicking on buttons or links
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button, a')) {
+                return;
+            }
+            
+            const details = profile.querySelector('.transaction-details');
+            if (details) {
+                details.style.display = details.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    });
+    
+    // Filter transactions
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const filter = btn.dataset.filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Filter transactions
+            document.querySelectorAll('.transaction-profile').forEach(transaction => {
+                const method = transaction.dataset.paymentMethod || '';
+                if (filter === 'all' || method.includes(filter)) {
+                    transaction.style.display = 'grid';
+                } else {
+                    transaction.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Transaction actions
+    async function cancelTransaction(transactionId) {
+        if (!confirm('Are you sure you want to cancel this transaction?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/transactions/${transactionId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to cancel transaction');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request');
+        }
+    }
+    
+    async function retryTransaction(transactionId) {
+        try {
+            const response = await fetch(`/transactions/${transactionId}/retry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.message || 'Failed to retry transaction');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request');
+        }
+    }
+    
+    // Add event listeners for action buttons
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.btn-cancel').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                cancelTransaction(btn.dataset.transactionId);
+            });
+        });
+        
+        document.querySelectorAll('.btn-retry').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                retryTransaction(btn.dataset.transactionId);
+            });
+        });
+    });
+</script>
+{% endblock %}

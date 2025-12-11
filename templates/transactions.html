@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Transaction History</h2>
+    
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Your Transactions</h5>
+            <div>
+                <a href="{{ url_for('paypal') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to PayPal
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Fee</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in transactions %}
+                        <tr>
+                            <td>{{ txn.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if txn.sender_email == current_user.email %}
+                                    Sent to {{ txn.receiver_name }}
+                                {% else %}
+                                    Received from {{ txn.sender_name or 'Guest' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if txn.sender_email == current_user.email %}
+                                    <span class="badge bg-danger">Sent</span>
+                                {% else %}
+                                    <span class="badge bg-success">Received</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">{{ "%0.2f"|format(txn.amount) }} {{ txn.currency }}</td>
+                            <td class="text-nowrap">
+                                {% if txn.fee > 0 %}{{ "%0.2f"|format(txn.fee) }} {{ txn.currency }}{% else %}-{% endif %}
+                            </td>
+                            <td class="text-nowrap fw-bold">
+                                {% if txn.sender_email == current_user.email %}
+                                    -{{ "%0.2f"|format(txn.total_amount) }}
+                                {% else %}
+                                    +{{ "%0.2f"|format(txn.total_amount - txn.fee) }}
+                                {% endif %}
+                                {{ txn.currency }}
+                            </td>
+                            <td>
+                                {% if txn.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif txn.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif txn.status == 'cancelled' %}
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                {% elif txn.status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ txn.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#txnModal{{ txn.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- Transaction Details Modal -->
+                        <div class="modal fade" id="txnModal{{ txn.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Transaction Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <dl class="row">
+                                            <dt class="col-sm-4">Transaction ID:</dt>
+                                            <dd class="col-sm-8">{{ txn.paypal_txn_id or 'N/A' }}</dd>
+                                            
+                                            <dt class="col-sm-4">Date:</dt>
+                                            <dd class="col-sm-8">{{ txn.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                            
+                                            <dt class="col-sm-4">Status:</dt>
+                                            <dd class="col-sm-8">
+                                                {% if txn.status == 'completed' %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% elif txn.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ txn.status|title }}</span>
+                                                {% endif %}
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">{{ 'Recipient' if txn.sender_email == current_user.email else 'Sender' }}:</dt>
+                                            <dd class="col-sm-8">
+                                                {{ txn.receiver_name if txn.sender_email == current_user.email else txn.sender_name or 'Guest' }}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ txn.receiver_email if txn.sender_email == current_user.email else txn.sender_email or '' }}
+                                                </small>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Amount:</dt>
+                                            <dd class="col-sm-8">
+                                                {{ "%0.2f"|format(txn.amount) }} {{ txn.currency }}
+                                                {% if txn.fee > 0 %}
+                                                    <br><small class="text-muted">Fee: {{ "%0.2f"|format(txn.fee) }} {{ txn.currency }}</small>
+                                                {% endif %}
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Total:</dt>
+                                            <dd class="col-sm-8 fw-bold">
+                                                {% if txn.sender_email == current_user.email %}
+                                                    -{{ "%0.2f"|format(txn.total_amount) }}
+                                                {% else %}
+                                                    +{{ "%0.2f"|format(txn.total_amount - txn.fee) }}
+                                                {% endif %}
+                                                {{ txn.currency }}
+                                            </dd>
+                                            
+                                            {% if txn.description %}
+                                            <dt class="col-sm-4">Description:</dt>
+                                            <dd class="col-sm-8">{{ txn.description }}</dd>
+                                            {% endif %}
+                                        </dl>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {% if txn.status == 'pending' and txn.receiver_email == current_user.email %}
+                                            <a href="{{ url_for('receive_money') }}" class="btn btn-primary">Complete Payment</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p class="mb-0">No transactions found</p>
+                                    <small>Your transactions will appear here</small>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if transactions %}
+        <div class="card-footer text-muted">
+            Showing {{ transactions|length }} transaction{{ 's' if transactions|length != 1 }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Auto-close alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+</script>
+{% endblock %}

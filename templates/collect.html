@@ -1,0 +1,378 @@
+{% extends "clientHome.html" %}
+{% block body %}
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<!-- Fee Display Card -->
+<div class="fee-container">
+  <div class="fee-header" id="feeHeader">
+    <h2>Transaction Fees</h2>
+    <i class="fa-solid fa-chevron-down" id="toggleIcon"></i>
+  </div>
+
+  <div class="fee-card" id="feeCard">
+    <div class="fee-table-container">
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th>Amount Range ($)</th>
+            <th>Fee ($)</th>
+          </tr>
+        </thead>
+        <tbody id="feeTableBody">
+          <!-- Will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<div class="form-container">
+  <form action="{{ url_for('collect') }}" method="POST" enctype="multipart/form-data" class="send-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label for="sender_name">Sender's Full Name</label>
+      <input type="text" name="sender_name" id="sender_name" required placeholder="Your full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_name">Receiver's Full Name</label>
+      <input type="text" name="receiver_name" id="receiver_name" required placeholder="Receiver's full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_email">Receiver's Email</label>
+      <input type="email" name="receiver_email" id="receiver_email" required placeholder="Receiver's email" />
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <input type="number" name="amount" id="amount" required placeholder="Amount to send" min="0" step="0.01"
+        oninput="calculateFee(this.value)" />
+    </div>
+
+    <div class="form-group fee-display">
+      <label>Transaction Fee:</label>
+      <div id="feeAmount">$0.00</div>
+    </div>
+
+    <div class="form-group total-display">
+      <label>Total to Pay:</label>
+      <div id="totalAmount">$0.00</div>
+    </div>
+
+    <div class="form-group">
+      <label for="source_country">Source Country</label>
+      <select name="source_country" id="source_country" required>
+        <option value="">-- Select Country --</option>
+        <option value="Congo">Congo</option>
+        <option value="North Cyprus">North Cyprus</option>
+        <option value="Turkey">Turkey</option>
+        <option value="France">France</option>
+        <option value="USA">USA</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="destination_country">Destination Country</label>
+      <select name="destination_country" id="destination_country" required>
+        <option value="">-- Select Country --</option>
+        <option value="Congo">Congo</option>
+        <option value="North Cyprus">North Cyprus</option>
+        <option value="Turkey">Turkey</option>
+        <option value="France">France</option>
+        <option value="USA">USA</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="sending_method">Sending Method</label>
+      <select name="sending_method" id="sending_method" required>
+        <option value="">-- Select Method --</option>
+        <option value="Airtel Money">Airtel Money</option>
+        <option value="M-Pesa">M-Pesa</option>
+        <option value="Orange Money">Orange Money</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Cash Pickup">Cash Pickup</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="receiver_number">Receiver's Phone Number</label>
+      <input type="tel" name="receiver_number" id="receiver_number" required placeholder="Receiver's phone number" />
+    </div>
+
+    <div class="form-group">
+      <label for="sender_number">Sender's Phone Number</label>
+      <input type="tel" name="sender_number" id="sender_number" required placeholder="Sender's phone number" />
+    </div>
+
+    <div class="form-group">
+      <label for="attachment">Proof of Payment (Image/PDF)</label>
+      <input type="file" name="imageprove" id="imageprove" accept="image/*,.pdf" required />
+      <small class="form-text text-muted">Upload a clear image or PDF of the payment proof</small>
+    </div>
+
+    <button type="submit" class="send-btn">Submit Withdrawal Request</button>
+  </form>
+</div>
+
+<!-- Flash Messages -->
+
+
+<style>
+  /* Add some basic styling for flash messages */
+  .flash-messages {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .alert {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+
+  .alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+  }
+
+  .alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+  }
+
+  .fee-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #2a2e39;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 7px 30px rgba(62, 9, 11, 0.3);
+  }
+
+  .fee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #3a404d;
+    color: #e1e1e1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .fee-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .fee-header:hover {
+    background: #4a4f5c;
+  }
+
+  .fee-card {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+  }
+
+  .fee-card.collapsed {
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .fee-table-container {
+    padding: 0 15px 15px;
+  }
+
+  .fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e1e1e1;
+  }
+
+  .fee-table th,
+  .fee-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #3a404d;
+  }
+
+  .fee-table th {
+    background: #3a404d;
+    color: #f39264;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+
+  .fee-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .fee-table td:last-child {
+    color: #f39264;
+    font-weight: 600;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .fee-container {
+      margin: 15px;
+    }
+
+    .fee-table th,
+    .fee-table td {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .fee-display,
+  .total-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #3a404d;
+    margin: 10px 0;
+  }
+
+  .fee-display label,
+  .total-display label {
+    color: #e1e1e1;
+    font-weight: 500;
+  }
+
+  .fee-display div,
+  .total-display div {
+    color: #f39264;
+    font-weight: 600;
+    font-size: 1.1em;
+  }
+
+  .total-display {
+    border-top: 2px solid #3a404d;
+    margin-top: 15px;
+    padding-top: 15px;
+    font-size: 1.1em;
+  }
+</style>
+
+<script>
+  const feeRanges = [
+    { min: 1, max: 25, fee: 4.99 },
+    { min: 26, max: 55, fee: 6.99 },
+    { min: 56, max: 75, fee: 8.99 },
+    { min: 76, max: 100, fee: 10.99 },
+    { min: 101, max: 125, fee: 13.99 },
+    { min: 126, max: 200, fee: 15.99 },
+    { min: 201, max: 300, fee: 18.99 },
+    { min: 301, max: 400, fee: 22.99 },
+    { min: 401, max: 500, fee: 26.99 },
+    { min: 501, max: 600, fee: 31.99 },
+    { min: 601, max: 700, fee: 41.99 },
+    { min: 701, max: 800, fee: 50.99 },
+    { min: 801, max: 900, fee: 65.99 },
+    { min: 901, max: 1000, fee: 70.99 },
+    { min: 1001, max: 1500, fee: 85.99 },
+    { min: 1501, max: 2000, fee: 85.99 },
+    { min: 2001, max: 2500, fee: 100.99 },
+    { min: 2501, max: 3000, fee: 110.99 },
+    { min: 3001, max: 3500, fee: 120.99 },
+    { min: 3501, max: 4000, fee: 150.99 },
+    { min: 4001, max: 4500, fee: 170.99 },
+    { min: 4501, max: 5000, fee: 190.99 },
+    { min: 5001, max: 5500, fee: 210.99 },
+    { min: 5501, max: 6000, fee: 230.99 },
+    { min: 6001, max: 6500, fee: 260.99 },
+    { min: 6501, max: 7000, fee: 280.99 }
+  ];
+
+  // Function to populate the fee table
+  function populateFeeTable() {
+    const tbody = document.getElementById('feeTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = ''; // Clear existing rows
+    feeRanges.forEach(range => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>$${range.min} - $${range.max}</td>
+        <td>$${range.fee.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function calculateFee(amount) {
+    amount = parseFloat(amount) || 0;
+    let fee = 0;
+
+    // Find the appropriate fee based on amount
+    for (const range of feeRanges) {
+      if (amount >= range.min && amount <= range.max) {
+        fee = range.fee;
+        break;
+      }
+    }
+
+    // If amount is 0 or not in any range, set fee to 0
+    if (amount === 0 || fee === 0) {
+      document.getElementById('feeAmount').textContent = '$0.00';
+      document.getElementById('totalAmount').textContent = '$0.00';
+      return;
+    }
+
+    const total = amount - fee;
+
+    // Update the display
+    document.getElementById('feeAmount').textContent = `$${fee.toFixed(2)}`;
+    document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+  }
+
+  // Initialize everything when the DOM is fully loaded
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the fee table
+    populateFeeTable();
+
+    // Set up the collapsible fee card
+    const feeHeader = document.getElementById('feeHeader');
+    const feeCard = document.getElementById('feeCard');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (feeHeader && feeCard && toggleIcon) {
+      feeHeader.addEventListener('click', function () {
+        feeCard.classList.toggle('collapsed');
+        const isCollapsed = feeCard.classList.contains('collapsed');
+        toggleIcon.className = isCollapsed ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+      });
+    }
+
+    // Initialize fee calculation if there's an amount in the input
+    const amountInput = document.getElementById('amount');
+    if (amountInput && amountInput.value) {
+      calculateFee(amountInput.value);
+    }
+  });
+</script>
+{% endblock %}

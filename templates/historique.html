@@ -1,0 +1,107 @@
+{% extends "clientHome.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="leaderboard">
+    <header>
+        <h1 class="leaderboard__title">
+            <i class="fas fa-history"></i>
+            <span class="leaderboard__title--top">Transaction</span>
+            <span class="leaderboard__title--bottom">History</span>
+        </h1>
+    </header>
+
+    <main class="leaderboard__profiles">
+        {% if transactions %}
+        {% for transaction in transactions %}
+        <article class="leaderboard__profile">
+            <div class="profile-icon">
+                {% if transaction.sender_name == session.username %}
+                <i class="fas fa-arrow-up send-icon"></i>
+                {% else %}
+                <i class="fas fa-arrow-down receive-icon"></i>
+                {% endif %}
+            </div>
+            <div class="transaction-details">
+                <span class="leaderboard__name">
+                    {{ 'To: ' + transaction.receiver_name if transaction.sender_name == session.username else 'From: ' +
+                    transaction.sender_name }}
+                    <span class="transaction-method">
+                        <i
+                            class="fas fa-{{ 'mobile-alt' if transaction.sending_method == 'mobile_money' else 'money-bill-wave' }}"></i>
+                        {{ transaction.sending_method|replace('_', ' ')|title }}
+                    </span>
+                </span>
+                <span class="transaction-date">
+                    <i class="far fa-clock"></i>
+                    {{ transaction.created_at.strftime('%b %d, %Y %H:%M') }}
+                </span>
+            </div>
+            <div class="transaction-amount">
+                <span
+                    class="leaderboard__value {% if transaction.sender_name == session.username %}negative{% else %}positive{% endif %}">
+                    {% if transaction.sender_name == session.username %}-{% else %}+{% endif %}${{
+                    "%.2f"|format(transaction.amount) }}
+                </span>
+            </div>
+        </article>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-exchange-alt"></i>
+            <p>No transactions found</p>
+        </div>
+        {% endif %}
+
+        {% if withdrawalRequests %}
+        {% for withdrawal in withdrawalRequests %}
+        <article class="leaderboard__profile withdrawal">
+            <div class="profile-icon">
+                <i class="fas fa-wallet withdrawal-icon"></i>
+            </div>
+            <div class="transaction-details">
+                <span class="leaderboard__name">
+                    Withdraw
+                    <span class="status-badge status-{{ withdrawal.status|lower }}">
+                        <i
+                            class="fas fa-{{ 'check-circle' if withdrawal.status == 'approved' else 'clock' if withdrawal.status == 'pending' else 'times-circle' }}"></i>
+                        {{ withdrawal.status|title }}
+                    </span>
+                </span>
+                <span class="transaction-date">
+                    <i class="far fa-clock"></i>
+                    {{ withdrawal.created_at.strftime('%b %d, %Y %H:%M') }}
+                </span>
+            </div>
+            <div class="transaction-amount">
+                <span class="leaderboard__value negative">
+                    -${{ "%.2f"|format(withdrawal.amount) }}
+                </span>
+            </div>
+        </article>
+        {% endfor %}
+        {% endif %}
+    </main>
+</div>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        color: var(--text);
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}

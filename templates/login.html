@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='mycss.css') }}" />
+    <style>
+        img {
+            max-width: 170px;
+            border-radius: 50%;
+            margin-bottom: -60px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="fullcontainer">
+        <div class="container">
+
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+            <span class="ball"></span>
+
+            <form action="{{ url_for('login') }}" class="form" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <img src="{{ url_for('static', filename='image/logo copie 2.png') }}" alt="logo" />
+
+                <div class="inputBox">
+                    <label class="inputText" for="email">Email</label>
+                    <input type="email" name="email" id="email" placeholder="Please enter your email" required />
+                </div>
+
+                <div class="inputBox">
+                    <div class="passwordTitle">
+                        <label for="password" class="inputText">Password</label>
+                        <a href="#">forget password?</a>
+                    </div>
+                    <input type="password" name="password" id="password" placeholder="Please enter your password"
+                        required />
+                </div>
+
+                <p class="separation">
+                    <span> </span>
+                </p>
+
+                <button class="btn" type="submit">Login</button>
+
+                <div class="forgetParagraph">
+                    <p>I forgot my password <a href="/sigin">Signup</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

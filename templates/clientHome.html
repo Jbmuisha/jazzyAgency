@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+    <title>Money App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='mycss.css') }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f2f5f9;
+            color: #333;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        body,
+        html {
+            height: 100%;
+            overflow: hidden;
+            /* prevent body scrolling */
+        }
+
+
+        /* Tablet & Desktop Enhancements */
+        @media (min-width: 768px) {
+            body {
+                background-color: #e8eef5;
+            }
+
+            .app-container {
+                max-width: 900px;
+                margin: 40px auto;
+                border-radius: 16px;
+            }
+
+            .topbar {
+                padding: 24px 32px;
+                font-size: 22px;
+            }
+
+            .topbar-left img {
+                height: 90px;
+            }
+
+            .topbar-center h1 {
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 26px;
+                color: #333;
+            }
+
+            .topbar-right i {
+                font-size: 26px;
+            }
+
+            .carousel-track a {
+                font-size: 16px;
+                padding: 12px 24px;
+            }
+
+            .carousel-track i {
+                font-size: 18px;
+            }
+
+            .action-buttons {
+                padding: 30px;
+                gap: 30px;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <div class="topbar">
+            <div class="topbar-left">
+                <img src="{{ url_for('static', filename='image/logo copie 2.png') }}" alt="Logo" />
+            </div>
+            <div class="topbar-center">
+                <h1>JAZZYAGENCY</h1>
+            </div>
+            <div class="topbar-right">
+                <span>🇫🇷</span>
+                <span>🇬🇧</span>
+                <div class="flex items-center hover:text-rose-600 cursor-pointer" aria-label="Profile">
+                    {% if session.get('user_image') %}
+                    <img src="{{ url_for('static', filename=session.get('user_image')) }}" alt="User Profile"
+                        class="profile-image"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                    <i data-lucide="user-circle" class="profile-fallback-icon hidden"></i>
+                    {% else %}
+                    <i data-lucide="user-circle" class="profile-fallback-icon"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Nav -->
+        <div class="carousel-track">
+            <a href="/send" class="nav-link {% if request.path == '/send' %}active{% endif %}">
+                <i class="fas fa-paper-plane"></i><span>Send</span>
+            </a>
+            <a href="/collect" class="nav-link {% if request.path == '/collect' %}active{% endif %}">
+                <i class="fas fa-hand-holding-usd"></i><span>Collect</span>
+            </a>
+            <!-- And so on for other links -->
+
+            <a href="/historique" class="nav-link {% if request.path == '/historique' %}active{% endif %}"><i
+                    class="fas fa-history"></i><span>History</span></a>
+            <a href="/paypal" class="nav-link {% if request.path.startswith('/paypal') %}active{% endif %}">
+                <i class="fab fa-paypal"></i><span>PayPal</span>
+            </a>
+            <a href="/appointment" class="nav-link {% if request.path == '/appointment' %}active{% endif %}"><i class=" fas
+                fa-calendar-check"></i><span>Appointments</span></a>
+            <a href="#"><i class="fas fa-wallet"></i><span>Wallet</span></a>
+            <a href="#"><i class="fas fa-bell"></i><span>Alerts</span></a>
+        </div>
+
+
+        <div class="main">
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+
+
+    <!-- Example Content Section -->
+    <!-- JS for Scroll + Active -->
+    <script>
+        const links = document.querySelectorAll('.carousel-track a');
+
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // e.preventDefault(); // optional: remove this if using real navigation
+                link.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+
+                // Active styling
+                links.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

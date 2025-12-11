@@ -1,0 +1,156 @@
+{% extends "clientHome.html" %} {% block body %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<div class="form-container">
+  <form id="appointmentForm" method="POST" action="{{ url_for('handle_appointment') }}" class="send-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-header">
+      <h2>Schedule an Appointment</h2>
+    </div>
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <select name="service" id="">
+        <option value="">Service</option>
+        <option value="transactions">transactions</option>
+        <option value="withdrawals">withdrawals</option>
+        <option value="Other Services">Other Services </option>
+
+      </select>
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="date">Preferred Date</label>
+      <div class="input-group">
+        <i class="fas fa-calendar"></i>
+        <input type="date" id="date" name="date" class="form-control" min="" required />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Preferred Time <span class="text-danger">*</span></label>
+      <div class="time-slots" id="timeSlots">
+        <label class="time-slot">
+          <input type="radio" name="time" value="09:00" required> 9:00 AM
+        </label>
+        <label class="time-slot">
+          <input type="radio" name="time" value="10:00"> 10:00 AM
+        </label>
+        <label class="time-slot">
+          <input type="radio" name="time" value="11:00"> 11:00 AM
+        </label>
+        <label class="time-slot">
+          <input type="radio" name="time" value="14:00"> 2:00 PM
+        </label>
+        <label class="time-slot">
+          <input type="radio" name="time" value="15:00"> 3:00 PM
+        </label>
+        <label class="time-slot">
+          <input type="radio" name="time" value="16:00"> 4:00 PM
+        </label>
+      </div>
+    </div>
+    <style>
+      .time-slots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .time-slot {
+        display: block;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .time-slot:hover {
+        background-color: #f5f5f5;
+      }
+
+      .time-slot input[type="radio"] {
+        display: none;
+      }
+
+      .time-slot input[type="radio"]:checked+span {
+        font-weight: bold;
+      }
+
+      .time-slot input[type="radio"]:checked+span::before {
+        content: "✓ ";
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const timeSlots = document.querySelectorAll('.time-slot');
+
+        timeSlots.forEach(slot => {
+          const radio = slot.querySelector('input[type="radio"]');
+
+          slot.addEventListener('click', function () {
+            // Remove active class from all slots
+            timeSlots.forEach(s => s.classList.remove('active'));
+            // Add active class to clicked slot
+            this.classList.add('active');
+            // Check the radio button
+            radio.checked = true;
+          });
+
+          // Add active class when radio is checked (for keyboard navigation)
+          radio.addEventListener('change', function () {
+            if (this.checked) {
+              timeSlots.forEach(s => s.classList.remove('active'));
+              this.closest('.time-slot').classList.add('active');
+            }
+          });
+        });
+      });
+    </script>
+
+    <button type="submit" class="send-btn">Submit</button>
+  </form>
+</div>
+
+<script>
+  // Simple form submission handler to prevent double submission
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('appointmentForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function () {
+      // Disable submit button to prevent double submission
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      // The form will now submit normally, and Flask-WTF will handle CSRF validation
+    });
+  });
+</script>
+{% endblock %}

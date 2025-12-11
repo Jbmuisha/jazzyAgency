@@ -1,0 +1,277 @@
+{% extends "adminView.html" %} {% block content %}
+
+<div class="table-container">
+  <table class="transaction-table">
+    <thead>
+      <tr>
+        <th>Sender's Full Name</th>
+        <th>Receiver's Full Name</th>
+        <th>Sender's Email</th>
+        <th>Amount</th>
+        <th>Sender's Number</th>
+        <th>Sender's Country</th>
+        <th>Sending Method</th>
+        <th>Receiver's Country</th>
+        <th>Receiver Number</th>
+      </tr>
+    </thead>
+    <tbody id="sender">
+      {% for transaction in transactions %}
+      <tr>
+        <td class="th1">{{ transaction.sender_name }}</td>
+        <td class="th2">{{ transaction.receiver_name }}</td>
+        <td class="th3">{{ transaction.sender_email }}</td>
+        <td class="th4">{{ transaction.amount }}</td>
+        <td class="th5">{{ transaction.sender_number }}</td>
+        <td class="th6">{{ transaction.sender_country }}</td>
+        <td class="th7">{{ transaction.sending_method }}</td>
+        <td class="th8">{{ transaction.receiver_country }}</td>
+        <td class="th9">{{ transaction.receiver_number }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /* Table Container */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+
+  /* Main Table Styling */
+  .transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+    font-family: 'OpenSans-Regular', Arial, sans-serif;
+  }
+
+  /* Table Header Styling */
+  .transaction-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .transaction-table thead th {
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Table Body Styling */
+  .transaction-table tbody {
+    background-color: #f8f9fa;
+  }
+
+  .transaction-table tbody tr {
+    height: 55px;
+    font-size: 15px;
+    color: #555;
+    line-height: 1.4;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  .transaction-table tbody tr:hover {
+    background-color: #e3f2fd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .transaction-table tbody tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+
+  .transaction-table tbody tr:nth-child(even):hover {
+    background-color: #e3f2fd;
+  }
+
+  .transaction-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  /* Table Cell Styling */
+  .transaction-table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    font-weight: 400;
+  }
+
+  /* Specific Column Styling */
+  .th1,
+  .th2 {
+    /* Names */
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .th3 {
+    /* Email */
+    color: #3498db;
+    font-family: monospace;
+  }
+
+  .th4 {
+    /* Amount */
+    font-weight: 700;
+    color: #27ae60;
+    text-align: right;
+  }
+
+  .th5,
+  .th9 {
+    /* Phone numbers */
+    font-family: monospace;
+    color: #7f8c8d;
+  }
+
+  .th6,
+  .th8 {
+    /* Countries */
+    text-transform: capitalize;
+    color: #8e44ad;
+  }
+
+  .th7 {
+    /* Sending method */
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e74c3c;
+  }
+
+  /* Responsive Design */
+  @media screen and (max-width: 992px) {
+    .table-container {
+      margin: 10px 0;
+    }
+
+    .transaction-table {
+      font-size: 14px;
+    }
+
+    .transaction-table thead th {
+      padding: 12px 8px;
+      font-size: 12px;
+    }
+
+    .transaction-table tbody tr {
+      height: auto;
+      padding: 15px 0;
+    }
+
+    .transaction-table td {
+      padding: 8px 10px;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+
+    .transaction-table,
+    .transaction-table thead,
+    .transaction-table tbody,
+    .transaction-table th,
+    .transaction-table td,
+    .transaction-table tr {
+      display: block;
+    }
+
+    .transaction-table thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    .transaction-table tr {
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .transaction-table td {
+      border: none;
+      position: relative;
+      padding: 8px 15px 8px 35%;
+      text-align: left;
+    }
+
+    .transaction-table td:before {
+      content: attr(data-label) ": ";
+      position: absolute;
+      left: 15px;
+      width: 30%;
+      padding-right: 10px;
+      white-space: nowrap;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* Add data labels for mobile */
+    .th1:before {
+      content: "Sender Name";
+    }
+
+    .th2:before {
+      content: "Receiver Name";
+    }
+
+    .th3:before {
+      content: "Email";
+    }
+
+    .th4:before {
+      content: "Amount";
+    }
+
+    .th5:before {
+      content: "Sender Phone";
+    }
+
+    .th6:before {
+      content: "Sender Country";
+    }
+
+    .th7:before {
+      content: "Method";
+    }
+
+    .th8:before {
+      content: "Receiver Country";
+    }
+
+    .th9:before {
+      content: "Receiver Phone";
+    }
+  }
+
+  /* Reset and Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  *,
+  ::after,
+  ::before {
+    box-sizing: inherit;
+  }
+</style>
+
+{% endblock %}

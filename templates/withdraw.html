@@ -1,0 +1,468 @@
+{% extends "adminView.html" %} {% block content %}
+
+<div class="table-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Withdrawal Requests</h2>
+        <div class="status-filters">
+            <a href="{{ url_for('withdrawals', status='all') }}"
+                class="status-tab {% if status_filter == 'all' %}active{% endif %}">
+                All <span class="badge">{{ status_counts.all }}</span>
+            </a>
+            <a href="{{ url_for('withdrawals', status='pending') }}"
+                class="status-tab {% if status_filter == 'pending' %}active{% endif %}">
+                Pending <span class="badge">{{ status_counts.pending }}</span>
+            </a>
+            <a href="{{ url_for('withdrawals', status='approved') }}"
+                class="status-tab {% if status_filter == 'approved' %}active{% endif %}">
+                Approved <span class="badge">{{ status_counts.approved }}</span>
+            </a>
+            <a href="{{ url_for('withdrawals', status='rejected') }}"
+                class="status-tab {% if status_filter == 'rejected' %}active{% endif %}">
+                Rejected <span class="badge">{{ status_counts.rejected }}</span>
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <div class="table-responsive">
+        <table class="withdrawal-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Sender</th>
+                    <th>Receiver</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Proof</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="withdrawal">
+                {% for withdrawal in withdrawals %}
+                <tr>
+                    <td class="th1">
+                        {{ withdrawal.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </td>
+                    <td class="th2">
+                        <strong>{{ withdrawal.sender_name }}</strong><br />
+                        <small>{{ withdrawal.source_country }}</small>
+                    </td>
+                    <td class="th3">
+                        <strong>{{ withdrawal.receiver_name }}</strong><br />
+                        <small>{{ withdrawal.receiver_email }}<br />
+                            {{ withdrawal.receiver_number }}<br />
+                            {{ withdrawal.destination_country }}</small>
+                    </td>
+                    <td class="th4">${{ "%.2f"|format(withdrawal.amount) }}</td>
+                    <td class="th5">{{ withdrawal.sending_method }}</td>
+                    <td class="th6">
+                        <span class="status-badge status-{{ withdrawal.status }}">
+                            {{ withdrawal.status|title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if withdrawal.proof_filename %}
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#proofModal{{ withdrawal.id }}">
+                            <i class="fas fa-image"></i> View
+                        </button>
+
+                        <!-- Modal for each image -->
+                        <div class="modal fade" id="proofModal{{ withdrawal.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Payment Proof</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        {% set proof_url = url_for('uploaded_file', filename=withdrawal.proof_filename) %}
+                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                            <img src="{{ proof_url }}" alt="Payment Proof" class="img-fluid"
+                                                onerror="this.onerror=null; this.src=this.getAttribute('data-fallback')"
+                                                data-fallback="{{ url_for('static', filename='img/image-not-found.png') }}"
+                                                style="max-width: 100%; max-height: 70vh; cursor: zoom-in;"
+                                                id="proofImage{{ withdrawal.id }}"
+                                                onclick="toggleImageSize('proofImage{{ withdrawal.id }}')">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a href="{{ proof_url }}" class="btn btn-primary" download="{{ withdrawal.proof_filename }}">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">No proof</span>
+                        {% endif %}
+                    </td>
+                    <td class="th8 actions">
+                        {% if withdrawal.status == 'pending' %}
+                        <div class="btn-group">
+                            <form action="{{ url_for('update_withdrawal_status', withdrawal_id=withdrawal.id) }}"
+                                method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <input type="hidden" name="status" value="approved" />
+                                <button type="submit" class="btn-approve"
+                                    onclick="return confirm('Approve this withdrawal request?')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <form action="{{ url_for('update_withdrawal_status', withdrawal_id=withdrawal.id) }}"
+                                method="POST" class="d-inline ms-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <input type="hidden" name="status" value="rejected" />
+                                <button type="submit" class="btn-reject"
+                                    onclick="return confirm('Reject this withdrawal request?')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span class="text-muted small">No actions available</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p class="mb-0">No withdrawal requests found</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 40px auto 20px;
+        margin-top: 80px;
+    }
+
+    .status-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .status-tab {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-tab:hover {
+        background-color: #f8f9fa;
+        text-decoration: none;
+    }
+
+    .status-tab.active {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .withdrawal-table {
+        width: 100%;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+
+    .withdrawal-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 12px 16px;
+        border-bottom: 2px solid #e9ecef;
+        color: #495057;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .withdrawal-table td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .withdrawal-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .withdrawal-table tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 80px;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .amount {
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    .actions .btn {
+        min-width: 80px;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @media (max-width: 1200px) {
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .withdrawal-table {
+            min-width: 1000px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .status-filters {
+            justify-content: flex-start;
+            margin-top: 10px;
+        }
+
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+    }
+
+    .proof-image-container {
+        max-width: 150px;
+        max-height: 150px;
+        overflow: hidden;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .proof-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .proof-image:hover {
+        transform: scale(1.05);
+    }
+
+    .modal-image {
+        max-width: 100%;
+        max-height: 80vh;
+    }
+
+    .btn-view-proof {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background: #0d6efd;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .btn-view-proof:hover {
+        background: #0b5ed7;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+        .proof-image-container {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        .btn-view-proof {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+    }
+
+    .scroll-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .scroll-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .scroll-to-top:hover {
+        background: #0b5ed7;
+        transform: translateY(-3px);
+    }
+
+    .scroll-to-top i {
+        font-size: 1.5rem;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Loading spinner */
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    /* Error message */
+    .alert {
+        margin-top: 1rem;
+    }
+
+    /* Debug info (hidden by default) */
+    .debug-info {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 5px;
+    }
+</style>
+
+<button class="scroll-to-top" id="scrollToTop" title="Go to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Simple scroll to top button functionality
+    // Toggle image size on click
+    function toggleImageSize(imgId) {
+        const img = document.getElementById(imgId);
+        if (img.style.maxWidth === '100%') {
+            img.style.maxWidth = 'none';
+            img.style.maxHeight = '90vh';
+            img.style.cursor = 'zoom-out';
+            img.style.transition = 'all 0.3s ease';
+        } else {
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            img.style.cursor = 'zoom-in';
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const scrollToTopBtn = document.getElementById("scrollToTop");
+
+        window.addEventListener("scroll", function () {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add("visible");
+            } else {
+                scrollToTopBtn.classList.remove("visible");
+            }
+        });
+
+        scrollToTopBtn.addEventListener("click", function () {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    });
+</script>
+{% endblock %}
